@@ -4,6 +4,8 @@ import (
 	"errors"
 	"regexp"
 	"strconv"
+
+	. "json/strings"
 )
 
 type TokenKind string
@@ -90,42 +92,6 @@ func headingNumberOf(input []byte) *float64 {
 	return &res
 }
 
-func unescapeString(str []byte) []byte {
-	result := make([]byte, 0, len(str))
-	for i := 0; i < len(str); i++ {
-		if str[i] == '\\' {
-			if i+1 >= len(str) {
-				return nil
-			}
-			switch str[i+1] {
-			case '"':
-				result = append(result, '"')
-			case '\\':
-				result = append(result, '\\')
-			case '/':
-				result = append(result, '/')
-			case 'b':
-				result = append(result, '\b')
-			case 'f':
-				result = append(result, '\f')
-			case 'n':
-				result = append(result, '\n')
-			case 'r':
-				result = append(result, '\r')
-			case 't':
-				result = append(result, '\t')
-			case 'u':
-				panic("Unicode literal is not supported")
-			}
-			i += 1
-		} else {
-			result = append(result, str[i])
-		}
-	}
-
-	return result
-}
-
 func NextTokenOf(input []byte) (*Token, error) {
 	start := 0
 	for ; start < len(input); start += 1 {
@@ -158,8 +124,13 @@ func NextTokenOf(input []byte) (*Token, error) {
 		if bytes == nil {
 			return nil, errors.New("Unexpected EOF")
 		}
-		str := string(unescapeString((bytes[1 : len(bytes)-1])))
-		return &Token{kind: String, value: str}, nil
+
+		str, err := UnescapeString((bytes[1 : len(bytes)-1]))
+		if err != nil {
+			return nil, err
+		}
+
+		return &Token{kind: String, value: string(str)}, nil
 	}
 
 	if identifier := headingIdentifierOf(input); identifier != nil {
