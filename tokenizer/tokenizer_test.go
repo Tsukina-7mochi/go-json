@@ -3,7 +3,8 @@ package tokenizer
 import "testing"
 
 func assertGetToken(t *testing.T, input string, want Token) {
-	got, err := NextTokenOf([]byte(input))
+	tokenizer := NewTokenizer([]byte(input))
+	got, err := tokenizer.Next()
 
 	if err != nil {
 		t.Fatalf("NextTokenOf(\"%s\") returned error: %v", input, err)
