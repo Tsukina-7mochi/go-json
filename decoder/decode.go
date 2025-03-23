@@ -9,6 +9,19 @@ import (
 var ErrUnexpectedTokenType = errors.New("Unexpected token type")
 var ErrUnexpectedTargetType = errors.New("Unexpected target type")
 
+func decodeBoolean(t *tokenizer.Tokenizer, out *bool) error {
+	token, err := t.Next()
+	if err != nil {
+		return err
+	}
+	if token.Kind == tokenizer.BooleanToken {
+		*out = token.BoolValue()
+	} else {
+		return ErrUnexpectedTokenType
+	}
+	return nil
+}
+
 func decodeString(t *tokenizer.Tokenizer, out *string) error {
 	token, err := t.Next()
 	if err != nil {
@@ -48,6 +61,8 @@ func Decode(input []byte, out any) error {
 	outType := outTypePtr.Elem()
 
 	switch outType.Kind() {
+	case reflect.Bool:
+		return decodeBoolean(tokenizer.NewTokenizer(input), out.(*bool))
 	case reflect.String:
 		return decodeString(tokenizer.NewTokenizer(input), out.(*string))
 	case reflect.Int:
