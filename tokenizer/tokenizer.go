@@ -8,6 +8,9 @@ import (
 	. "json/strings"
 )
 
+var ErrUnexpectedEOF = errors.New("Unexpected EOF")
+var ErrUnexpectedCharacter = errors.New("Unexpected character")
+
 type Tokenizer struct {
 	input []byte
 	index int
@@ -70,7 +73,7 @@ func (t *Tokenizer) takeString() (*Token, error) {
 		}
 	}
 
-	return nil, errors.New("Unexpected EOF")
+	return nil, ErrUnexpectedEOF
 }
 
 func (t *Tokenizer) takeNumber() *Token {
@@ -142,5 +145,5 @@ func (t *Tokenizer) Next() (*Token, error) {
 		return numberToken, nil
 	}
 
-	return nil, errors.New("Unexpected character")
+	return nil, ErrUnexpectedCharacter
 }

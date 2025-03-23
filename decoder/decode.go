@@ -6,6 +6,9 @@ import (
 	"reflect"
 )
 
+var ErrUnexpectedTokenType = errors.New("Unexpected token type")
+var ErrUnexpectedTargetType = errors.New("Unexpected target type")
+
 func decodeString(t *tokenizer.Tokenizer, out *string) error {
 	token, err := t.Next()
 	if err != nil {
@@ -15,7 +18,7 @@ func decodeString(t *tokenizer.Tokenizer, out *string) error {
 	if token.Kind == tokenizer.StringToken {
 		*out = token.StringValue()
 	} else {
-		return errors.New("Expected string token")
+		return ErrUnexpectedTokenType
 	}
 
 	return nil
@@ -30,7 +33,7 @@ func decodeNumber(t *tokenizer.Tokenizer, out *float64) error {
 	if token.Kind == tokenizer.NumberToken {
 		*out = token.FloatValue()
 	} else {
-		return errors.New("Expected number token")
+		return ErrUnexpectedTokenType
 	}
 
 	return nil
@@ -56,5 +59,5 @@ func Decode(input []byte, out any) error {
 		return decodeNumber(tokenizer.NewTokenizer(input), out.(*float64))
 	}
 
-	return errors.New("Unsupported type")
+	return ErrUnexpectedTargetType
 }
