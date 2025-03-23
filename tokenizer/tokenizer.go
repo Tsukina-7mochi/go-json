@@ -8,39 +8,6 @@ import (
 	. "json/strings"
 )
 
-type TokenKind string
-
-const (
-	EOF            = TokenKind("EOF")
-	BeginArray     = TokenKind("BeginArray")
-	EndArray       = TokenKind("EndArray")
-	BeginObject    = TokenKind("BeginObject")
-	EndObject      = TokenKind("EndObject")
-	NameSeparator  = TokenKind("NameSeparator")
-	ValueSeparator = TokenKind("ValueSeparator")
-	Null           = TokenKind("Null")
-	Boolean        = TokenKind("Boolean")
-	Number         = TokenKind("Number")
-	String         = TokenKind("String")
-)
-
-type Token struct {
-	kind  TokenKind
-	value interface{}
-}
-
-func (t *Token) BoolValue() bool {
-	return t.value.(bool)
-}
-
-func (t *Token) FloatValue() float64 {
-	return t.value.(float64)
-}
-
-func (t *Token) StringValue() string {
-	return t.value.(string)
-}
-
 type Tokenizer struct {
 	input []byte
 	index int
@@ -99,7 +66,7 @@ func (t *Tokenizer) takeString() (*Token, error) {
 				return nil, err
 			}
 
-			return &Token{kind: String, value: string(value)}, nil
+			return &Token{Kind: StringToken, Value: string(value)}, nil
 		}
 	}
 
@@ -118,48 +85,48 @@ func (t *Tokenizer) takeNumber() *Token {
 	if err != nil {
 		panic(err)
 	}
-	return &Token{kind: Number, value: value}
+	return &Token{Kind: NumberToken, Value: value}
 }
 
 func (t *Tokenizer) Next() (*Token, error) {
 	t.skipWhitespace()
 
 	if t.index >= len(t.input) {
-		return &Token{kind: EOF}, nil
+		return &Token{Kind: EOFToken}, nil
 	}
 
 	switch t.input[t.index] {
 	case '[':
 		t.index += 1
-		return &Token{kind: BeginArray}, nil
+		return &Token{Kind: BeginArrayToken}, nil
 	case ']':
 		t.index += 1
-		return &Token{kind: EndArray}, nil
+		return &Token{Kind: EndArrayToken}, nil
 	case '{':
 		t.index += 1
-		return &Token{kind: BeginObject}, nil
+		return &Token{Kind: BeginObjectToken}, nil
 	case '}':
 		t.index += 1
-		return &Token{kind: EndObject}, nil
+		return &Token{Kind: EndObjectToken}, nil
 	case ':':
 		t.index += 1
-		return &Token{kind: NameSeparator}, nil
+		return &Token{Kind: NameSeparatorToken}, nil
 	case ',':
 		t.index += 1
-		return &Token{kind: ValueSeparator}, nil
+		return &Token{Kind: ValueSeparatorToken}, nil
 	}
 
 	if t.matchesHeadingIdentifier([]byte("null")) {
 		t.index += 4
-		return &Token{kind: Null}, nil
+		return &Token{Kind: NullToken}, nil
 	}
 	if t.matchesHeadingIdentifier([]byte("true")) {
 		t.index += 4
-		return &Token{kind: Boolean, value: true}, nil
+		return &Token{Kind: BooleanToken, Value: true}, nil
 	}
 	if t.matchesHeadingIdentifier([]byte("false")) {
 		t.index += 5
-		return &Token{kind: Boolean, value: false}, nil
+		return &Token{Kind: BooleanToken, Value: false}, nil
 	}
 
 	stringToken, err := t.takeString()
