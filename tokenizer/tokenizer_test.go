@@ -7,10 +7,39 @@ func assertGetToken(t *testing.T, input string, want Token) {
 	got, err := tokenizer.Next()
 
 	if err != nil {
-		t.Fatalf("NextTokenOf(\"%s\") returned error: %v", input, err)
+		t.Fatalf("NewTokenizer(\"%s\").Next() returned error: %v", input, err)
 	}
 	if got == nil || *got != want {
-		t.Errorf("NextTokenOf(\"%s\") == %v, want &%v", input, got, want)
+		t.Errorf("NewTokenizer(\"%s\").Next() == %v, want &%v", input, got, want)
+	}
+}
+
+func assertGetTokenSlice(t *testing.T, input string, want []Token) {
+	tokenizer := NewTokenizer([]byte(input))
+
+	tokens := make([]Token, 0)
+	for {
+		token, err := tokenizer.Next()
+		if err != nil {
+			t.Fatalf("NewTokenizer(\"%s\").Next() returned error: %v", input, err)
+		}
+		print(token.Kind)
+		tokens = append(tokens, *token)
+
+		if token.Kind == EOFToken {
+			break
+		}
+	}
+
+	if len(tokens) != len(want) {
+		t.Fatalf("{...NewTokenizer(\"%s\").Next()} == %v, want %v", input, tokens, want)
+		return
+	}
+	for i := range tokens {
+		if tokens[i] != want[i] {
+			t.Errorf("{...NewTokenizer(\"%s\").Next()} == %v, want %v", input, tokens, want)
+			return
+		}
 	}
 }
 
@@ -72,4 +101,64 @@ func TestTokenize_string(t *testing.T) {
 	assertGetToken(t, "\"\"", Token{Kind: StringToken, Value: ""})
 	assertGetToken(t, "\"foo\"", Token{Kind: StringToken, Value: "foo"})
 	assertGetToken(t, "\"foo\\\"bar\"", Token{Kind: StringToken, Value: "foo\"bar"})
+}
+
+func TestTokenizer_ArrayStructure(t *testing.T) {
+	assertGetTokenSlice(t, `[null, false, "a", 0, 0.5, [], {}]`, []Token{
+		{Kind: BeginArrayToken},
+		{Kind: NullToken},
+		{Kind: ValueSeparatorToken},
+		{Kind: BooleanToken, Value: false},
+		{Kind: ValueSeparatorToken},
+		{Kind: StringToken, Value: "a"},
+		{Kind: ValueSeparatorToken},
+		{Kind: NumberToken, Value: float64(0)},
+		{Kind: ValueSeparatorToken},
+		{Kind: NumberToken, Value: float64(0.5)},
+		{Kind: ValueSeparatorToken},
+		{Kind: BeginArrayToken},
+		{Kind: EndArrayToken},
+		{Kind: ValueSeparatorToken},
+		{Kind: BeginObjectToken},
+		{Kind: EndObjectToken},
+		{Kind: EndArrayToken},
+		{Kind: EOFToken},
+	})
+}
+
+func TestTokenizer_ObjectStructure(t *testing.T) {
+	assertGetTokenSlice(t, `{"a": null, "b": false, "c": "a", "d": 0, "e": 0.5, "f": [], "g": {}}`, []Token{
+		{Kind: BeginObjectToken},
+		{Kind: StringToken, Value: "a"},
+		{Kind: NameSeparatorToken},
+		{Kind: NullToken},
+		{Kind: ValueSeparatorToken},
+		{Kind: StringToken, Value: "b"},
+		{Kind: NameSeparatorToken},
+		{Kind: BooleanToken, Value: false},
+		{Kind: ValueSeparatorToken},
+		{Kind: StringToken, Value: "c"},
+		{Kind: NameSeparatorToken},
+		{Kind: StringToken, Value: "a"},
+		{Kind: ValueSeparatorToken},
+		{Kind: StringToken, Value: "d"},
+		{Kind: NameSeparatorToken},
+		{Kind: NumberToken, Value: float64(0)},
+		{Kind: ValueSeparatorToken},
+		{Kind: StringToken, Value: "e"},
+		{Kind: NameSeparatorToken},
+		{Kind: NumberToken, Value: float64(0.5)},
+		{Kind: ValueSeparatorToken},
+		{Kind: StringToken, Value: "f"},
+		{Kind: NameSeparatorToken},
+		{Kind: BeginArrayToken},
+		{Kind: EndArrayToken},
+		{Kind: ValueSeparatorToken},
+		{Kind: StringToken, Value: "g"},
+		{Kind: NameSeparatorToken},
+		{Kind: BeginObjectToken},
+		{Kind: EndObjectToken},
+		{Kind: EndObjectToken},
+		{Kind: EOFToken},
+	})
 }

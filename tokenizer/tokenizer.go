@@ -84,6 +84,8 @@ func (t *Tokenizer) takeNumber() *Token {
 	}
 
 	matchBytes := t.input[t.index : t.index+len(match)]
+	t.index += len(match)
+
 	value, err := strconv.ParseFloat(string(matchBytes), 64)
 	if err != nil {
 		panic(err)
