@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"json/decoder"
+	"json/encoder"
 )
 
 type Address struct {
@@ -57,4 +58,10 @@ func main() {
 	}
 
 	printUser(user)
+
+	encoded, err := encoder.Encode(user)
+	if err != nil {
+		panic(err)
+	}
+	println(encoded)
 }
