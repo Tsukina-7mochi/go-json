@@ -87,16 +87,14 @@ func decodeArray(t *tokenizer.Tokenizer, out any) error {
 	// itemType should be T
 	itemType := outType.Elem()
 
-	_, err := expectToken(t, tokenizer.BeginArrayToken)
-	if err != nil {
+	if _, err := expectToken(t, tokenizer.BeginArrayToken); err != nil {
 		return err
 	}
 
 	for {
 		// item should be *T
 		item := reflect.New(itemType).Interface()
-		err := decode(t, item)
-		if err != nil {
+		if err := decode(t, item); err != nil {
 			return err
 		}
 
@@ -163,7 +161,9 @@ func decodeObject(t *tokenizer.Tokenizer, out any) error {
 		if !field.IsValid() {
 			return ErrUnexpectedTargetType
 		}
-		err = decode(t, field.Addr().Interface())
+		if err = decode(t, field.Addr().Interface()); err != nil {
+			return err
+		}
 
 		token, err := t.Next()
 		if err != nil {
