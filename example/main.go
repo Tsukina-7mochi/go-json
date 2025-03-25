@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-	"json/decoder"
-	"json/encoder"
+	"json"
 )
 
 type Address struct {
@@ -52,14 +51,14 @@ func main() {
     }`
 
 	var user User
-	err := decoder.Decode([]byte(input), &user)
+	err := json.Decode(input, &user)
 	if err != nil {
 		panic(err)
 	}
 
 	printUser(user)
 
-	encoded, err := encoder.Encode(user)
+	encoded, err := json.Encode(user)
 	if err != nil {
 		panic(err)
 	}
