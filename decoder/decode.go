@@ -115,6 +115,68 @@ func decodeArray(t *tokenizer.Tokenizer, out any) error {
 	return nil
 }
 
+func decodeObject(t *tokenizer.Tokenizer, out any) error {
+	outTypePtr := reflect.TypeOf(out)
+	if outTypePtr.Kind() != reflect.Ptr {
+		panic("out must be a pointer")
+	}
+	outValue := reflect.ValueOf(out).Elem()
+
+	outType := outTypePtr.Elem()
+	if outType.Kind() != reflect.Struct {
+		panic("out must be a struct")
+	}
+
+	tagFieldNames := map[string]string{}
+	numFields := outType.NumField()
+	for i := 0; i < numFields; i++ {
+		field := outType.Field(i)
+		tag := field.Tag.Get("json")
+		if tag != "" {
+			tagFieldNames[tag] = field.Name
+		}
+	}
+
+	if _, err := expectToken(t, tokenizer.BeginObjectToken); err != nil {
+		return err
+	}
+
+	for {
+		nameToken, err := expectToken(t, tokenizer.StringToken)
+		if err != nil {
+			return err
+		}
+
+		name := nameToken.StringValue()
+		fieldName := tagFieldNames[name]
+		if fieldName == "" {
+			fieldName = snakeCaseToUpperCamelCase(name)
+		}
+
+		if _, err := expectToken(t, tokenizer.NameSeparatorToken); err != nil {
+			return err
+		}
+
+		field := outValue.FieldByName(fieldName)
+		if !field.IsValid() {
+			return ErrUnexpectedTargetType
+		}
+		err = decode(t, field.Addr().Interface())
+
+		token, err := t.Next()
+		if err != nil {
+			return err
+		}
+		if token.Kind == tokenizer.EndObjectToken {
+			break
+		} else if token.Kind != tokenizer.ValueSeparatorToken {
+			return ErrUnexpectedTokenType
+		}
+	}
+
+	return nil
+}
+
 func decode(t *tokenizer.Tokenizer, out any) error {
 	outTypePtr := reflect.TypeOf(out)
 	if outTypePtr.Kind() != reflect.Ptr {
@@ -137,6 +199,8 @@ func decode(t *tokenizer.Tokenizer, out any) error {
 		return decodeNumber(t, out.(*float64))
 	case reflect.Slice:
 		return decodeArray(t, out)
+	case reflect.Struct:
+		return decodeObject(t, out)
 	}
 
 	return ErrUnexpectedTargetType

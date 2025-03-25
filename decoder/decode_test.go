@@ -159,3 +159,69 @@ func TestDecode_IntArrayArray(t *testing.T) {
 		}
 	}
 }
+
+func TestDecode_Object(t *testing.T) {
+	type model struct {
+		Name  string
+		Value int
+	}
+
+	want := model{Name: "hello", Value: 123}
+	var got model
+	err := Decode([]byte(`{"name": "hello", "value": 123}`), &got)
+
+	if err != nil {
+		t.Fatalf("Decode returned error: %v", err)
+	}
+	if got.Name != want.Name {
+		t.Errorf("Decode == %v, want %v", got, want)
+	}
+	if got.Value != want.Value {
+		t.Errorf("Decode == %v, want %v", got, want)
+	}
+}
+
+func TestDecode_NestedObject(t *testing.T) {
+	type sub struct {
+		Name  string
+		Value int
+	}
+	type sup struct {
+		Name string
+		Sub  sub
+	}
+
+	want := sup{Name: "hello", Sub: sub{Name: "world", Value: 123}}
+	var got sup
+	err := Decode([]byte(`{"name": "hello", "sub": {"name": "world", "value": 123}}`), &got)
+
+	if err != nil {
+		t.Fatalf("Decode returned error: %v", err)
+	}
+	if got.Name != want.Name {
+		t.Errorf("Decode == %v, want %v", got, want)
+	}
+	if got.Sub.Name != want.Sub.Name {
+		t.Errorf("Decode == %v, want %v", got, want)
+	}
+	if got.Sub.Value != want.Sub.Value {
+		t.Errorf("Decode == %v, want %v", got, want)
+	}
+}
+
+func TestDecode_TaggedObject(t *testing.T) {
+	type model struct {
+		Foo string `json:"bar"`
+	}
+
+	want := model{Foo: "hello"}
+	var got model
+	err := Decode([]byte(`{"bar": "hello"}`), &got)
+
+	if err != nil {
+		t.Fatalf("Decode returned error: %v", err)
+	}
+	if got.Foo != want.Foo {
+		t.Errorf("Decode == %v, want %v", got, want)
+	}
+}
