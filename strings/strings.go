@@ -76,3 +76,20 @@ func SnakeCaseToUpperCamelCase(name string) string {
 
 	return sb.String()
 }
+
+func CamelCaseToSnakeCase(name string) string {
+	sb := strings.Builder{}
+
+	for i, c := range name {
+		if i == 0 {
+			sb.WriteString(strings.ToLower(string(c)))
+		} else if 'A' <= c && c <= 'Z' {
+			sb.WriteByte('_')
+			sb.WriteString(strings.ToLower(string(c)))
+		} else {
+			sb.WriteRune(c)
+		}
+	}
+
+	return sb.String()
+}

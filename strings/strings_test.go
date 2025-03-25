@@ -5,7 +5,14 @@ import "testing"
 func assertSnakeCaseToUpperCamelCase(t *testing.T, input string, want string) {
 	got := SnakeCaseToUpperCamelCase(input)
 	if got != want {
-		t.Errorf("snakeCaseToCamelCase == %q, want %q", got, want)
+		t.Errorf("SnakeCaseToCamelCase == %q, want %q", got, want)
+	}
+}
+
+func assertCamelCaseToSnakeCase(t *testing.T, input string, want string) {
+	got := CamelCaseToSnakeCase(input)
+	if got != want {
+		t.Errorf("CamelCaseToSnakeCase == %q, want %q", got, want)
 	}
 }
 
@@ -65,4 +72,16 @@ func TestSnakeCaseToUpperCamelCase_2(t *testing.T) {
 
 func TestSnakeCaseToUpperCamelCase_3(t *testing.T) {
 	assertSnakeCaseToUpperCamelCase(t, "__hello_world", "HelloWorld")
+}
+
+func TestCamelCaseToSnakeCase_1(t *testing.T) {
+	assertCamelCaseToSnakeCase(t, "HelloWorld", "hello_world")
+}
+
+func TestCamelCaseToSnakeCase_2(t *testing.T) {
+	assertCamelCaseToSnakeCase(t, "helloWorld", "hello_world")
+}
+
+func TestCamelCaseToSnakeCase_3(t *testing.T) {
+	assertCamelCaseToSnakeCase(t, "hello_world", "hello_world")
 }
