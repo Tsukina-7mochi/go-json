@@ -1,6 +1,9 @@
 package strings
 
-import "errors"
+import (
+	"errors"
+	"strings"
+)
 
 func EscapeString(str []byte) []byte {
 	result := make([]byte, 0, len(str))
@@ -51,4 +54,25 @@ func UnescapeString(str []byte) ([]byte, error) {
 	}
 
 	return result, nil
+}
+
+func SnakeCaseToUpperCamelCase(name string) string {
+	toUpperCase := true
+	sb := strings.Builder{}
+
+	for _, c := range name {
+		if c == '_' {
+			toUpperCase = true
+			continue
+		}
+
+		if toUpperCase {
+			sb.WriteString(strings.ToUpper(string(c)))
+		} else {
+			sb.WriteRune(c)
+		}
+		toUpperCase = false
+	}
+
+	return sb.String()
 }

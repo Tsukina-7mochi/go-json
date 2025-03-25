@@ -2,6 +2,13 @@ package strings
 
 import "testing"
 
+func assertSnakeCaseToUpperCamelCase(t *testing.T, input string, want string) {
+	got := SnakeCaseToUpperCamelCase(input)
+	if got != want {
+		t.Errorf("snakeCaseToCamelCase == %q, want %q", got, want)
+	}
+}
+
 func TestEscapeString_NormalString(t *testing.T) {
 	input := []byte("Hello, World!")
 	got := EscapeString(input)
@@ -46,4 +53,16 @@ func TestUnescapeString_Escaped(t *testing.T) {
 	if string(got) != string(want) {
 		t.Errorf("unescapeString(%v) == %v, want %v", input, got, want)
 	}
+}
+
+func TestSnakeCaseToUpperCamelCase_1(t *testing.T) {
+	assertSnakeCaseToUpperCamelCase(t, "hello_world", "HelloWorld")
+}
+
+func TestSnakeCaseToUpperCamelCase_2(t *testing.T) {
+	assertSnakeCaseToUpperCamelCase(t, "HelloWorld", "HelloWorld")
+}
+
+func TestSnakeCaseToUpperCamelCase_3(t *testing.T) {
+	assertSnakeCaseToUpperCamelCase(t, "__hello_world", "HelloWorld")
 }

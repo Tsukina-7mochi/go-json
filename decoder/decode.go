@@ -2,8 +2,10 @@ package decoder
 
 import (
 	"errors"
-	"json/tokenizer"
 	"reflect"
+
+	. "json/strings"
+	"json/tokenizer"
 )
 
 var ErrUnexpectedTokenType = errors.New("Unexpected token type")
@@ -150,7 +152,7 @@ func decodeObject(t *tokenizer.Tokenizer, out any) error {
 		name := nameToken.StringValue()
 		fieldName := tagFieldNames[name]
 		if fieldName == "" {
-			fieldName = snakeCaseToUpperCamelCase(name)
+			fieldName = SnakeCaseToUpperCamelCase(name)
 		}
 
 		if _, err := expectToken(t, tokenizer.NameSeparatorToken); err != nil {
